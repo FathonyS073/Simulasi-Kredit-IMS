@@ -53,6 +53,28 @@ const App = () => {
     ?.filter((item) => new Date(item.tanggal) <= tanggalBatas)
     .reduce((total, item) => total + item.angsuran, 0);
 
+  // Hitung denda dari angsuran yang belum dibayar per 14 Agustus 2024
+  const dendaList = hasil?.jadwal
+    ?.filter(
+      (item) =>
+        new Date(item.tanggal) <= tanggalBatas &&
+        new Date(item.tanggal) > new Date("2024-05-31") // Setelah Mei 2024
+    )
+    .map((item) => {
+      const jatuhTempo = new Date(item.tanggal);
+      const selisihHari = Math.floor(
+        (tanggalBatas - jatuhTempo) / (1000 * 60 * 60 * 24)
+      );
+      const denda = Math.round(item.angsuran * 0.001 * selisihHari);
+      return {
+        kontrakNo: "AGR00001",
+        clientName: "SUGUS",
+        installmentNo: item.ke,
+        hariTelat: selisihHari > 0 ? selisihHari : 0,
+        totalDenda: selisihHari > 0 ? denda : 0,
+      };
+    });
+
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white rounded shadow-md mt-10">
       <h1 className="text-2xl font-bold mb-4">Simulasi Kredit Mobil</h1>
@@ -136,7 +158,7 @@ const App = () => {
             </tbody>
           </table>
 
-          {/* Tambahan Tabel Total Angsuran Jatuh Tempo */}
+          {/* Tabel Total Angsuran Jatuh Tempo */}
           <div className="bg-gray-100 p-4 rounded mb-4">
             <h3 className="font-semibold mb-2">
               Total Angsuran Jatuh Tempo per 14 Agustus 2024
@@ -162,6 +184,47 @@ const App = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Tabel Denda Keterlambatan */}
+          {dendaList && dendaList.length > 0 && (
+            <div className="bg-red-50 p-4 rounded mb-4">
+              <h3 className="font-semibold mb-2">
+                Tabel Denda Keterlambatan (hingga 14 Agustus 2024)
+              </h3>
+              <table className="w-full text-sm border border-gray-300">
+                <thead className="bg-gray-700 text-white">
+                  <tr>
+                    <th className="border px-2 py-1">KONTRAK NO</th>
+                    <th className="border px-2 py-1">CLIENT NAME</th>
+                    <th className="border px-2 py-1">INSTALLMENT NO</th>
+                    <th className="border px-2 py-1">HARI KETERLAMBATAN</th>
+                    <th className="border px-2 py-1">TOTAL DENDA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dendaList.map((item, idx) => (
+                    <tr key={idx}>
+                      <td className="border px-2 py-1 text-center">
+                        {item.kontrakNo}
+                      </td>
+                      <td className="border px-2 py-1 text-center">
+                        {item.clientName}
+                      </td>
+                      <td className="border px-2 py-1 text-center">
+                        {item.installmentNo}
+                      </td>
+                      <td className="border px-2 py-1 text-center">
+                        {item.hariTelat}
+                      </td>
+                      <td className="border px-2 py-1 text-right">
+                        Rp {item.totalDenda.toLocaleString("id-ID")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>
