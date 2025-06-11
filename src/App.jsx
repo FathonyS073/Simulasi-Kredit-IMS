@@ -47,6 +47,12 @@ const App = () => {
     localStorage.setItem("angsuran_sugus_form", JSON.stringify(hasilObj));
   };
 
+  // Hitung total angsuran jatuh tempo per 14 Agustus 2024
+  const tanggalBatas = new Date("2024-08-14");
+  const totalJatuhTempo = hasil?.jadwal
+    ?.filter((item) => new Date(item.tanggal) <= tanggalBatas)
+    .reduce((total, item) => total + item.angsuran, 0);
+
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white rounded shadow-md mt-10">
       <h1 className="text-2xl font-bold mb-4">Simulasi Kredit Mobil</h1>
@@ -107,7 +113,7 @@ const App = () => {
           </ul>
 
           <h3 className="text-lg font-semibold mb-2">Jadwal Angsuran</h3>
-          <table className="w-full border border-gray-300 text-sm">
+          <table className="w-full border border-gray-300 text-sm mb-6">
             <thead>
               <tr className="bg-gray-100">
                 <th className="border px-2 py-1">Ke</th>
@@ -129,6 +135,33 @@ const App = () => {
               ))}
             </tbody>
           </table>
+
+          {/* Tambahan Tabel Total Angsuran Jatuh Tempo */}
+          <div className="bg-gray-100 p-4 rounded mb-4">
+            <h3 className="font-semibold mb-2">
+              Total Angsuran Jatuh Tempo per 14 Agustus 2024
+            </h3>
+            <table className="w-full text-sm border border-gray-300">
+              <thead className="bg-gray-700 text-white">
+                <tr>
+                  <th className="border px-2 py-1">KONTRAK NO</th>
+                  <th className="border px-2 py-1">CLIENT NAME</th>
+                  <th className="border px-2 py-1">
+                    TOTAL ANGSURAN JATUH TEMPO
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white">
+                  <td className="border px-2 py-1 text-center">AGR00001</td>
+                  <td className="border px-2 py-1 text-center">SUGUS</td>
+                  <td className="border px-2 py-1 text-right font-semibold">
+                    Rp {totalJatuhTempo?.toLocaleString("id-ID") ?? "-"}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
